@@ -69,15 +69,10 @@ def get_model(embedding_matrix, name):
     ps_start_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
     ps_start_flatten = Flatten()(ps_start_)  # [batch_size, n]
     ps_start = Activation('softmax')(ps_start_flatten)
-    # ps_start = Dense(max_context_seq_length, activation='softmax')(ps_start_flatten)  # [batch_size, n]
-
-    # m_2 = Bidirectional(LSTM(units, return_sequences=True))(m_1)  # [batch_size, n, 2l]
-    # concat2_out = Concatenate(axis=-1)([G, m_2])  # [batch_size, n, 4l]
 
     ps_end_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
     ps_end_flatten = Flatten()(ps_end_)  # [batch_size, n]
     ps_end = Activation('softmax')(ps_end_flatten)
-    # ps_end = Dense(max_context_seq_length, activation='softmax')(ps_end_flatten)  # [batch_size, n]
 
     model = Model(inputs=[c_seq_input, q_seq_input], outputs=[ps_start, ps_end])
     return model

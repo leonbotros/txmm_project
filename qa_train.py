@@ -1,21 +1,18 @@
 import json
 
-import numpy as np
+import matplotlib.pyplot as plt
 from keras import optimizers
-# from keras.layers import GRU as LSTM # uncomment to use GRUs instead of LSTMs
+
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 
-from model.model import get_model, load_glove_model, get_embedding_matrix
+from model.model import *
 
-embedding_dim = 100  # embedding dim
-max_context_seq_length = 350  # max context sequence length
-max_question_seq_length = 50  # max question sequence length
 units = 128  # number of LSTM/GRU units
 
 n_samples = None  # None means all
-epochs = 10
+epochs = 20
 learning_rate = 0.5
 # decay = 0.001
 batch_size = 32
@@ -43,6 +40,16 @@ def find_in_padded_seq(answer_seq, context_padded_seq):
             else:
                 return i, i + len(answer_seq)
     return -1, 0  # answer was not found somehow
+
+
+def plot_history(history):
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.show()
 
 
 def main():
@@ -114,12 +121,13 @@ def main():
     model.summary()
 
     history = model.fit([context_seqs_padded, question_seqs_padded],
-              [a_s_y, a_e_y],
-              epochs=epochs,
-              batch_size=batch_size,
-              validation_split=val_split)
+                        [a_s_y, a_e_y],
+                        epochs=epochs,
+                        batch_size=batch_size,
+                        validation_split=val_split)
 
-    model.save_weights('simple_bidaf.h5')
+    model.save_weights('simple_bidaf_20_epochs.h5')
+    plot_history(history)
 
 
 if __name__ == "__main__":

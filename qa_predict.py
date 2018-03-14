@@ -3,11 +3,7 @@ import json
 from keras.preprocessing.sequence import pad_sequences
 from keras.preprocessing.text import Tokenizer
 
-from model.model import get_model, load_glove_model, get_embedding_matrix
-
-embedding_dim = 100
-max_context_seq_length = 350  # max context sequence length
-max_question_seq_length = 50  # max question sequence length
+from model.model import *
 
 
 def get_dev_samples(dev_data):
@@ -25,19 +21,6 @@ def get_dev_samples(dev_data):
     return samples
 
 
-def get_train_samples(train_data):
-    samples = []
-    for subj in train_data:
-        paragraphs = subj['paragraphs']
-        for p in paragraphs:
-            context = p['context']
-            for q in p['qas']:
-                start = q['answers'][0]['answer_start']
-                end = start + len(q['answers'][0]['text'])
-                samples.append((context, q['question'], (start, end)))
-    return samples
-
-
 def get_best_answer_span(start_probs, end_probs):
     """ Finds best answer span (i, j) s.t.
      i <= j and start_probs[i] * end_probs[j] is maximum
@@ -49,7 +32,7 @@ def get_best_answer_span(start_probs, end_probs):
         if start_probs[max_i] * end_probs[j] > max_prob:
             max_j = j
             max_prob = start_probs[max_i] * end_probs[j]
-        if start_probs[max_i] < start_probs[j]:
+        if start_probs[j] > start_probs[max_i]:
             max_i = j
 
     return max_i, max_j
@@ -59,11 +42,6 @@ def main():
     dev_data = json.load(open("data/dev-v1.1.json"))['data']
     samples = get_dev_samples(dev_data)[:]
     ids, contexts, questions = zip(*samples)
-
-    # train_data = json.load(open("data/train-v1.1.json"))['data']
-    # samples = get_train_samples(train_data)[:]
-    # contexts, questions, answers = zip(*samples)
-    # ids = range(len(samples))
 
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(contexts + questions)
@@ -95,9 +73,7 @@ def main():
     for idx, (id, s, e) in enumerate(zip(ids, ps_start, ps_end)):
         print(idx, id)
         i, j = get_best_answer_span(s, e)
-        print(i, j)
         answer = " ".join([inv_word_index[x] for x in context_seqs_padded[idx][i:j] if x])
-        print(answer)
         predictions[id] = answer
 
     with open('predictions.txt', 'w') as f:
