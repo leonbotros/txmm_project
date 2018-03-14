@@ -61,6 +61,7 @@ def get_model(embedding_matrix, name):
     # Interaction/attention layer, output shape
     G = Attention()([c_encoder_out, q_encoder_out])  # [batch_size, n, 4l]
 
+    # Modeling layer
     m_1 = Bidirectional(LSTM(units, return_sequences=True))(G)  # [batch_size, n, 2l]
 
     concat1_out = Concatenate(axis=-1)([G, m_1])

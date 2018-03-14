@@ -15,8 +15,8 @@ max_question_seq_length = 50  # max question sequence length
 units = 128  # number of LSTM/GRU units
 
 n_samples = None  # None means all
-epochs = 5
-learning_rate = 0.01
+epochs = 10
+learning_rate = 0.5
 # decay = 0.001
 batch_size = 32
 val_split = 0.1
@@ -98,6 +98,7 @@ def main():
     question_seqs_padded = np.delete(question_seqs_padded, to_remove, axis=0)
     start = np.delete(start, to_remove)
     end = np.delete(end, to_remove)
+
     # categorical labels of floats
     a_s_y = to_categorical(np.asarray(start, dtype='float32'), num_classes=max_context_seq_length)
     a_e_y = to_categorical(np.asarray(end, dtype='float32'), num_classes=max_context_seq_length)
@@ -108,11 +109,11 @@ def main():
 
     model = get_model(embedding_matrix, name='train')
 
-    optimizer = optimizers.Adam(lr=learning_rate)
+    optimizer = optimizers.adadelta(lr=learning_rate)
     model.compile(optimizer=optimizer, loss='categorical_crossentropy')
     model.summary()
 
-    model.fit([context_seqs_padded, question_seqs_padded],
+    history = model.fit([context_seqs_padded, question_seqs_padded],
               [a_s_y, a_e_y],
               epochs=epochs,
               batch_size=batch_size,

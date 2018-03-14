@@ -25,6 +25,19 @@ def get_dev_samples(dev_data):
     return samples
 
 
+def get_train_samples(train_data):
+    samples = []
+    for subj in train_data:
+        paragraphs = subj['paragraphs']
+        for p in paragraphs:
+            context = p['context']
+            for q in p['qas']:
+                start = q['answers'][0]['answer_start']
+                end = start + len(q['answers'][0]['text'])
+                samples.append((context, q['question'], (start, end)))
+    return samples
+
+
 def get_best_answer_span(start_probs, end_probs):
     """ Finds best answer span (i, j) s.t.
      i <= j and start_probs[i] * end_probs[j] is maximum
@@ -34,12 +47,31 @@ def get_best_answer_span(start_probs, end_probs):
                           key=lambda x: x[2])
     return sorted_spans[0][0], sorted_spans[0][1]
 
+def get_best_answer_span2(start_probs, end_probs):
+    max_i, max_j = 0, 1
+    max_prob = start_probs[max_i] * end_probs[max_j]
+
+    for j, _ in enumerate(start_probs):
+        if start_probs[max_i] * end_probs[j] > max_prob:
+            max_j = j
+            max_prob = start_probs[max_i] * end_probs[j]
+        if start_probs[max_i] < start_probs[j]:
+            max_i = j
+
+    return max_i, max_j
+
+
+
 
 def main():
     dev_data = json.load(open("data/dev-v1.1.json"))['data']
     samples = get_dev_samples(dev_data)[:]
-
     ids, contexts, questions = zip(*samples)
+
+    # train_data = json.load(open("data/train-v1.1.json"))['data']
+    # samples = get_train_samples(train_data)[:]
+    # contexts, questions, answers = zip(*samples)
+    # ids = range(len(samples))
 
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(contexts + questions)
@@ -63,9 +95,9 @@ def main():
     embedding_matrix = get_embedding_matrix(word_index, glove_model)
     model = get_model(embedding_matrix, name='val')
 
-    # load_custom_weights(model, 'simple_bidaf.h5', )
     model.load_weights('simple_bidaf.h5', by_name=True)
 
+    print("predicting..")
     ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded])
     predictions = {}
     for idx, (id, s, e) in enumerate(zip(ids, ps_start, ps_end)):
