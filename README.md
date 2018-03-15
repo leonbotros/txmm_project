@@ -1,17 +1,19 @@
 # TxMM Project: Question answering using neural networks
 
-SQuAD data goes in the /data directory.
-Glove embeddings go in the /glove directory.
-
 # Links
 
-[train set link](bhttps://rajpurkar.github.io/SQuAD-explorer/dataset/train-v1.1.json)
-[dev set link](https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json)
-[glove embeddings link](http://nlp.stanford.edu/data/glove.6B.zip)
+[Train set link](https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v1.1.json)
+
+[Dev set link](https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json)
+
+[Glove embeddings link](http://nlp.stanford.edu/data/glove.6B.zip)
+
+SQuAD data goes in the data/ directory.
+Glove embeddings go in the glove/ directory.
 
 # Training
 
-Run qa_train.py
+Run `qa_train.py`
 
 # Testing on dev set
 

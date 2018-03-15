@@ -71,7 +71,6 @@ def main():
     ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded])
     predictions = {}
     for idx, (id, s, e) in enumerate(zip(ids, ps_start, ps_end)):
-        print(idx, id)
         i, j = get_best_answer_span(s, e)
         answer = " ".join([inv_word_index[x] for x in context_seqs_padded[idx][i:j] if x])
         predictions[id] = answer
