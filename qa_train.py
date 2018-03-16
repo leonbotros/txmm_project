@@ -120,16 +120,15 @@ def main():
     model.compile(optimizer=optimizer, loss='categorical_crossentropy')
     model.summary()
 
-    callback = ModelCheckpoint('weights/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
-                               monitor='val_loss',
-                               save_weights_only=True)
+    # callback = ModelCheckpoint('weights/weights.{epoch:02d}-{val_loss:.2f}.h5',
+    #                            monitor='val_loss',
+    #                            save_weights_only=True)
 
     history = model.fit([context_seqs_padded, question_seqs_padded],
                         [a_s_y, a_e_y],
                         epochs=epochs,
                         batch_size=batch_size,
-                        validation_split=val_split,
-                        callbacks=[callback])
+                        validation_split=val_split)
 
     model.save_weights('simple_bidaf_20_epochs.h5')
     plot_history(history)

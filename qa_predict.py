@@ -65,7 +65,7 @@ def main():
     embedding_matrix = get_embedding_matrix(word_index, glove_model)
     model = get_model(embedding_matrix, name='val')
 
-    model.load_weights('simple_bidaf.h5', by_name=True)
+    model.load_weights('simple_bidaf_20_epochs.h5', by_name=True)
 
     print("Predicting..")
     ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded])
@@ -75,7 +75,7 @@ def main():
         answer = " ".join([inv_word_index[x] for x in context_seqs_padded[idx][i:j] if x])
         predictions[id] = answer
 
-    with open('predictions.txt', 'w') as f:
+    with open('predictions2.txt', 'w') as f:
         json.dump(predictions, f)
 
 
