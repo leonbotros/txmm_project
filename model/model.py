@@ -63,17 +63,17 @@ def get_model(embedding_matrix, name):
 
     # Modeling layer
     m_1 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(G)  # [batch_size, n, 2l]
-    m_2 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_1)  # [batch_size, n, 2l]
-    m_3 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_2)
+    # m_2 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_1)  # [batch_size, n, 2l]
+    # m_3 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_2)
 
-    concat1_out = Concatenate(axis=-1)([G, m_2])
+    concat1_out = Concatenate(axis=-1)([G, m_1])
 
     ps_start_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
     ps_start_flatten = Flatten()(ps_start_)  # [batch_size, n]
     ps_start = Activation('softmax')(ps_start_flatten)
 
-    concat2_out = Concatenate(axis=-1)([G, m_3])
-    ps_end_ = TimeDistributed(Dense(1))(concat2_out)  # [batch_size, n, 1]
+    # concat2_out = Concatenate(axis=-1)([G, m_3])
+    ps_end_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
     ps_end_flatten = Flatten()(ps_end_)  # [batch_size, n]
     ps_end = Activation('softmax')(ps_end_flatten)
 
