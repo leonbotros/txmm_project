@@ -1,3 +1,4 @@
+import argparse
 import json
 
 import matplotlib.pyplot as plt
@@ -8,15 +9,6 @@ from keras.preprocessing.text import Tokenizer
 from keras.utils import to_categorical
 
 from model.model import *
-
-units = 128  # number of LSTM/GRU units
-
-n_samples = None  # None means all
-epochs = 20
-learning_rate = 0.5
-# decay = 0.001
-batch_size = 32
-val_split = 0.1
 
 
 def get_train_samples(train_data):
@@ -52,7 +44,7 @@ def plot_history(history):
     plt.show()
 
 
-def main():
+def main(learning_rate, batch_size, epochs, n_samples, validation_split):
     train_data = json.load(open("data/train-v1.1.json"))['data']
     samples = get_train_samples(train_data)[:n_samples]
     print('Training samples: %d' % len(samples))
@@ -120,19 +112,31 @@ def main():
     model.compile(optimizer=optimizer, loss='categorical_crossentropy')
     model.summary()
 
-    # callback = ModelCheckpoint('weights/weights.{epoch:02d}-{val_loss:.2f}.h5',
-    #                            monitor='val_loss',
-    #                            save_weights_only=True)
+    callback = ModelCheckpoint('weights/weights.{epoch:02d}--{loss}--{val_loss:.2f}.h5',
+                               monitor='val_loss',
+                               save_weights_only=True)
 
     history = model.fit([context_seqs_padded, question_seqs_padded],
                         [a_s_y, a_e_y],
                         epochs=epochs,
                         batch_size=batch_size,
-                        validation_split=val_split)
+                        validation_split=validation_split,
+                        callbacks=[callback])
 
-    model.save_weights('simple_bidaf_20_epochs.h5')
+    # model.save_weights('simple_bidaf_%d_epochs.h5' % epochs)
     plot_history(history)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--epochs', help='Number of epochs', required=True, type=int)
+    parser.add_argument('-b', '--batch_size', help='Batch_size', required=True, type=int)
+    parser.add_argument('-lr', '--learning_rate', help='Learning rate', type=float)
+    parser.add_argument('-n', '--n_samples', help='Number of samples', type=int)
+    parser.add_argument('-val', '--validation_split', help='Validation split', type=float)
+    args = vars(parser.parse_args())
+    if not args['learning_rate']:
+        args['learning_rate'] = 0.5
+    if not args['validation_split']:
+        args['validation_split'] = 0.1
+    main(**args)

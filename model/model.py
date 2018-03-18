@@ -13,7 +13,7 @@ embedding_dim = 100  # embedding dim
 max_context_seq_length = 350  # max context sequence length
 max_question_seq_length = 50  # max question sequence length
 units = 128  # number of LSTM/GRU units
-
+dropout = 0.2
 
 def load_glove_model(file):
     with open(file, 'r', encoding='utf8') as f:
@@ -54,23 +54,26 @@ def get_model(embedding_matrix, name):
     q_embedded = question_embedding_layer(q_seq_input)  # [batch_size, m, d]
 
     # Bidirectional LSTMs/GRUs used as encoders
-    c_encoder_out = Bidirectional(LSTM(units, return_sequences=True))(c_embedded)  # [batch_size, n, 2l]
+    c_encoder_out = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(c_embedded)  # [batch_size, n, 2l]
 
-    q_encoder_out = Bidirectional(LSTM(units, return_sequences=True))(q_embedded)  # [batch_size, n, 2l]
+    q_encoder_out = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(q_embedded)  # [batch_size, n, 2l]
 
     # Interaction/attention layer, output shape
     G = Attention()([c_encoder_out, q_encoder_out])  # [batch_size, n, 4l]
 
     # Modeling layer
-    m_1 = Bidirectional(LSTM(units, return_sequences=True))(G)  # [batch_size, n, 2l]
+    m_1 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(G)  # [batch_size, n, 2l]
+    m_2 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_1)  # [batch_size, n, 2l]
+    m_3 = Bidirectional(LSTM(units, return_sequences=True, dropout=dropout))(m_2)
 
-    concat1_out = Concatenate(axis=-1)([G, m_1])
+    concat1_out = Concatenate(axis=-1)([G, m_2])
 
     ps_start_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
     ps_start_flatten = Flatten()(ps_start_)  # [batch_size, n]
     ps_start = Activation('softmax')(ps_start_flatten)
 
-    ps_end_ = TimeDistributed(Dense(1))(concat1_out)  # [batch_size, n, 1]
+    concat2_out = Concatenate(axis=-1)([G, m_3])
+    ps_end_ = TimeDistributed(Dense(1))(concat2_out)  # [batch_size, n, 1]
     ps_end_flatten = Flatten()(ps_end_)  # [batch_size, n]
     ps_end = Activation('softmax')(ps_end_flatten)
 

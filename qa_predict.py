@@ -1,3 +1,4 @@
+import argparse
 import json
 
 from keras.preprocessing.sequence import pad_sequences
@@ -38,7 +39,7 @@ def get_best_answer_span(start_probs, end_probs):
     return max_i, max_j
 
 
-def main():
+def main(weights_file, prediction_file):
     dev_data = json.load(open("data/dev-v1.1.json"))['data']
     samples = get_dev_samples(dev_data)[:]
     ids, contexts, questions = zip(*samples)
@@ -65,7 +66,7 @@ def main():
     embedding_matrix = get_embedding_matrix(word_index, glove_model)
     model = get_model(embedding_matrix, name='val')
 
-    model.load_weights('simple_bidaf_20_epochs.h5', by_name=True)
+    model.load_weights(weights_file, by_name=True)
 
     print("Predicting..")
     ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded])
@@ -75,9 +76,13 @@ def main():
         answer = " ".join([inv_word_index[x] for x in context_seqs_padded[idx][i:j] if x])
         predictions[id] = answer
 
-    with open('predictions2.txt', 'w') as f:
+    with open(prediction_file, 'w') as f:
         json.dump(predictions, f)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-w', '--weights_file', help='Path to weights file', required=True)
+    parser.add_argument('-p', '--prediction_file', help='Path to prediction output file', required=True)
+    args = vars(parser.parse_args())
+    main(**args)
