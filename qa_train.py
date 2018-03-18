@@ -112,7 +112,7 @@ def main(learning_rate, batch_size, epochs, n_samples, validation_split):
     model.compile(optimizer=optimizer, loss='categorical_crossentropy')
     model.summary()
 
-    callback = ModelCheckpoint('weights/weights.{epoch:02d}--{loss}--{val_loss:.2f}.h5',
+    callback = ModelCheckpoint('weights/weights.{epoch:02d}--{loss:.2f}--{val_loss:.2f}.h5',
                                monitor='val_loss',
                                save_weights_only=True)
 
