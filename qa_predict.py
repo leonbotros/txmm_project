@@ -79,6 +79,8 @@ def main(weights_file, prediction_file, batch_size):
     with open(prediction_file, 'w') as f:
         json.dump(predictions, f)
 
+    print("Prediction file written")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
