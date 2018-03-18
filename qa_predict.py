@@ -39,7 +39,7 @@ def get_best_answer_span(start_probs, end_probs):
     return max_i, max_j
 
 
-def main(weights_file, prediction_file):
+def main(weights_file, prediction_file, batch_size):
     dev_data = json.load(open("data/dev-v1.1.json"))['data']
     samples = get_dev_samples(dev_data)[:]
     ids, contexts, questions = zip(*samples)
@@ -69,7 +69,7 @@ def main(weights_file, prediction_file):
     model.load_weights(weights_file, by_name=True)
 
     print("Predicting..")
-    ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded])
+    ps_start, ps_end = model.predict([context_seqs_padded, question_seqs_padded], batch_size=batch_size)
     predictions = {}
     for idx, (id, s, e) in enumerate(zip(ids, ps_start, ps_end)):
         i, j = get_best_answer_span(s, e)
@@ -84,5 +84,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-w', '--weights_file', help='Path to weights file', required=True)
     parser.add_argument('-p', '--prediction_file', help='Path to prediction output file', required=True)
+    parser.add_argument('-b', '--batch_size', help='Batch_size', required=True, type=int)
     args = vars(parser.parse_args())
     main(**args)
