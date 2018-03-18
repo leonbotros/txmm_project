@@ -15,7 +15,7 @@ Glove embeddings go in the glove/ directory.
 
 To run 10 epochs with a batch size of 64 and an initial learning rate of 0.5 run:
 
-`qa_train.py --e 10 -b 64 -lr 0.5`
+`qa_train.py -e 10 -b 64 -lr 0.5`
 
 # Testing on dev set
 
